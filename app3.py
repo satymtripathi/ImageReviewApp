@@ -73,17 +73,35 @@ if mode == "Review New":
         st.image(Image.open(current_image), caption=current_image.name, use_container_width=True)
         st.markdown(f"**Progress:** {completed + 1} / {total_images}")
     with c2:
-        with st.form(key="review_form", border=True):
+        with st.form(key=f"review_form_{current_image.name}", border=True):
             st.markdown(f"### 🖼️ Reviewing: `{current_image.name}`")
-            condition = st.radio("Select Condition:", 
-                                 ["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"],
-                                 horizontal=True)
-            margin_note = st.text_area("Notes (if any):", 
-                                       placeholder="Example: 'Scar with mild edema – acceptable if labeled as Edema or Scar.'",
-                                       height=60)
-            feedback = st.text_area("Feedback (optional):", 
-                                    placeholder="Example: 'Slightly blurred – visibility reduced.'", 
-                                    height=60)
+            
+            # Condition resets to "Normal" each time
+            condition = st.radio(
+                "Select Condition:", 
+                ["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"],
+                horizontal=True,
+                index=0,
+                key=f"condition_{current_image.name}"
+            )
+
+            # Notes and Feedback reset to blank for each new image
+            margin_note = st.text_area(
+                "Notes (if any):", 
+                value="", 
+                placeholder="Example: 'Scar with mild edema – acceptable if labeled as Edema or Scar.'",
+                height=60,
+                key=f"note_{current_image.name}"
+            )
+
+            feedback = st.text_area(
+                "Feedback (optional):", 
+                value="", 
+                placeholder="Example: 'Slightly blurred – visibility reduced.'", 
+                height=60,
+                key=f"feedback_{current_image.name}"
+            )
+
             submit = st.form_submit_button("✅ Submit Review", use_container_width=True)
 
             if submit:
@@ -116,14 +134,17 @@ elif mode == "Edit Reviews":
         st.image(Image.open(IMAGE_FOLDER / selected_image), caption=selected_image, use_container_width=True)
     with c2:
         prev = reviewed[reviewed["ImageName"] == selected_image].iloc[0]
-        with st.form(key="edit_form", border=True):
+        with st.form(key=f"edit_form_{selected_image}", border=True):
             st.markdown(f"### ✏️ Edit Review for `{selected_image}`")
-            condition = st.radio("Condition:",
-                                 ["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"],
-                                 horizontal=True,
-                                 index=["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"].index(prev["Condition"]))
-            margin_note = st.text_area("Margin of error / clinical note:", value=prev.get("MarginOfErrorNote", ""), height=60)
-            feedback = st.text_area("Feedback / comments:", value=prev.get("Feedback", ""), height=60)
+            condition = st.radio(
+                "Condition:",
+                ["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"],
+                horizontal=True,
+                index=["Normal", "Scar", "Edema", "Infection", "Others", "Not Sure"].index(prev["Condition"]),
+                key=f"edit_condition_{selected_image}"
+            )
+            margin_note = st.text_area("Margin of error / clinical note:", value=prev.get("MarginOfErrorNote", ""), height=60, key=f"edit_note_{selected_image}")
+            feedback = st.text_area("Feedback / comments:", value=prev.get("Feedback", ""), height=60, key=f"edit_feedback_{selected_image}")
             update = st.form_submit_button("💾 Update Review", use_container_width=True)
 
             if update:
